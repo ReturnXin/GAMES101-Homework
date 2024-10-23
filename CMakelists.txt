@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.10)
+
+# 设置项目名称
+project(GMES101-HOMEWORK)
+
+# set(chapter_to_compile "Chap3" CACHE STRING "Chapter to compile")
+
+# # check if the chapter is valid
+# if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${chapter_to_compile}")
+#     message(FATAL_ERROR "Chapter ${chapter_to_compile} does not exist")
+# endif() 
+# # Check if there is a CMakeLists.txt file in the chapter directory
+# if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${chapter_to_compile}/CMakeLists.txt")
+#     message(FATAL_ERROR "Chapter ${chapter_to_compile} does not contain a CMakeLists.txt file")
+# endif()
+
+# # add the chapter to the project
+# add_subdirectory(${chapter_to_compile})
+
+# 遍历所有的子目录，将其中有cmakelists的添加到项目中
+file(GLOB children RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/*)
+foreach(child ${children})
+    if(IS_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/${child})
+        if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${child}/CMakeLists.txt)
+            add_subdirectory(${child})
+        endif()
+    endif()
+endforeach()
