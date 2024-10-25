@@ -126,6 +126,7 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload &payload)
     if (payload.texture)
     {
         // TODO: Get the texture value at the texture coordinates of the current fragment
+        return_color = payload.texture->getColor(payload.tex_coords.x(), payload.tex_coords.y());
     }
     Eigen::Vector3f texture_color;
     texture_color << return_color.x(), return_color.y(), return_color.z();
@@ -153,6 +154,18 @@ Eigen::Vector3f texture_fragment_shader(const fragment_shader_payload &payload)
     {
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular*
         // components are. Then, accumulate that result on the *result_color* object.
+        Eigen::Vector3f l = light.position - point;
+        Eigen::Vector3f v = eye_pos - point;
+        Eigen::Vector3f n = normal.normalized();
+        Eigen::Vector3f h = (v + l).normalized();
+
+        float r2 = l.dot(l);
+
+        Eigen::Vector3f la = ka.cwiseProduct(amb_light_intensity);
+        Eigen::Vector3f ld = kd.cwiseProduct(light.intensity / r2) * std::max(0.0f, n.dot(l.normalized()));
+        Eigen::Vector3f ls = ks.cwiseProduct(light.intensity / r2) * pow(std::max(0.0f, n.dot(h)), p);
+
+        result_color += la + ld + ls;
     }
 
     return result_color * 255.f;
@@ -182,6 +195,18 @@ Eigen::Vector3f phong_fragment_shader(const fragment_shader_payload &payload)
     {
         // TODO: For each light source in the code, calculate what the *ambient*, *diffuse*, and *specular*
         // components are. Then, accumulate that result on the *result_color* object.
+        Eigen::Vector3f l = light.position - point;
+        Eigen::Vector3f v = eye_pos - point;
+        Eigen::Vector3f n = normal.normalized();
+        Eigen::Vector3f h = (v + l).normalized();
+
+        float r2 = l.dot(l);
+
+        Eigen::Vector3f la = ka.cwiseProduct(amb_light_intensity);
+        Eigen::Vector3f ld = kd.cwiseProduct(light.intensity / r2) * std::max(0.0f, n.dot(l.normalized()));
+        Eigen::Vector3f ls = ks.cwiseProduct(light.intensity / r2) * pow(std::max(0.0f, n.dot(h)), p);
+
+        result_color += la + ld + ls;
     }
 
     return result_color * 255.f;
