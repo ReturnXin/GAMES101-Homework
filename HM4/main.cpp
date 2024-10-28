@@ -33,14 +33,28 @@ void naive_bezier(const std::vector<cv::Point2f> &points, cv::Mat &window)
 cv::Point2f recursive_bezier(const std::vector<cv::Point2f> &control_points, float t)
 {
     // TODO: Implement de Casteljau's algorithm
+    if (control_points.size() == 1)
+        return control_points[0];
 
-    return cv::Point2f();
+    std::vector<cv::Point2f> new_points;
+    for (int i = 0; i < control_points.size() - 1; i++)
+    {
+        cv::Point2f point1 = control_points[i], point2 = control_points[i + 1];
+        cv::Point2f new_point(point1.x * t + point2.x * (1 - t), point1.y * t + point2.y * (1 - t));
+        new_points.push_back(new_point);
+    }
+    return recursive_bezier(new_points, t);
 }
 
 void bezier(const std::vector<cv::Point2f> &control_points, cv::Mat &window)
 {
     // TODO: Iterate through all t = 0 to t = 1 with small steps, and call de Casteljau's
     // recursive Bezier algorithm.
+    for (double i = 0; i <= 1; i += 0.0001)
+    {
+        auto point = recursive_bezier(control_points, i);
+        window.at<cv::Vec3b>(point.y, point.x)[1] = 255;
+    }
 }
 
 int main()
@@ -62,7 +76,7 @@ int main()
         if (control_points.size() == 4)
         {
             naive_bezier(control_points, window);
-            //   bezier(control_points, window);
+            bezier(control_points, window);
 
             cv::imshow("Bezier Curve", window);
             cv::imwrite("my_bezier_curve.png", window);
