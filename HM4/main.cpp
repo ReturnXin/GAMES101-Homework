@@ -53,7 +53,30 @@ void bezier(const std::vector<cv::Point2f> &control_points, cv::Mat &window)
     for (double i = 0; i <= 1; i += 0.0001)
     {
         auto point = recursive_bezier(control_points, i);
-        window.at<cv::Vec3b>(point.y, point.x)[1] = 255;
+
+        cv::Point2i p0(point.x - std::floor(point.x) < 0.5 ? std::floor(point.x) - 1 : floor(point.x), //
+                       point.y - std::floor(point.y) < 0.5 ? std::floor(point.y) - 1 : floor(point.y));
+        std::vector<cv::Point2i> multiSample_points = {p0,                          //
+                                                       cv::Point2i(p0.x, p0.y + 1), //
+                                                       cv::Point2i(p0.x + 1, p0.y), //
+                                                       cv::Point2i(p0.x + 1, p0.y + 1)};
+
+        std::vector<double> distance;
+        double sum_d = 0;
+        for (int i = 0; i < 4; i++)
+        {
+            auto sample_point = multiSample_points[i];
+            double d = sqrt(pow(sample_point.x + 0.5 - point.x, 2) + pow(sample_point.y + 0.5 - point.y, 2));
+            distance.push_back(d);
+            sum_d += d;
+        }
+
+        for (int i = 0; i < 4; i++)
+        {
+            auto sample_point = multiSample_points[i];
+            double k = distance[i] / sum_d;
+            window.at<cv::Vec3b>(sample_point.y, sample_point.x)[1] = std::min(255., window.at<cv::Vec3b>(sample_point.y, sample_point.x)[1] + k * 255.f);
+        }
     }
 }
 
@@ -75,7 +98,7 @@ int main()
 
         if (control_points.size() == 4)
         {
-            naive_bezier(control_points, window);
+            // naive_bezier(control_points, window);
             bezier(control_points, window);
 
             cv::imshow("Bezier Curve", window);
